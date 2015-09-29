@@ -1,21 +1,33 @@
 package reader
 
 import (
-	"bufio"
+	"bytes"
 	"encoding/binary"
 	"errors"
+	"hash/crc32"
 	"io"
 
 	"github.com/rameshvarun/ups-tools/common"
 )
 
 // ReadUPS takes a file object and reads it into a PatchData data structure.
-func ReadUPS(reader io.Reader) (*common.PatchData, error) {
-	bufferedReader := bufio.NewReader(reader)
+func ReadUPS(data []byte) (*common.PatchData, error) {
+	reader := bytes.NewReader(data)
+
+	// Verify Patch through Checksum
+	patchSumExpected := crc32.ChecksumIEEE(data[:len(data)-4])
+	var patchSumActual uint32
+	err := binary.Read(bytes.NewBuffer(data[len(data)-4:]), binary.LittleEndian, &patchSumActual)
+	if err != nil {
+		return nil, err
+	}
+	if patchSumExpected != patchSumActual {
+		return nil, errors.New("Patch failed checksum.")
+	}
 
 	// Read and validate the signature.
 	signature := make([]byte, 4)
-	_, err := io.ReadAtLeast(bufferedReader, signature, 4)
+	_, err = io.ReadAtLeast(reader, signature, 4)
 	if err != nil {
 		return nil, err
 	}
@@ -24,20 +36,20 @@ func ReadUPS(reader io.Reader) (*common.PatchData, error) {
 	}
 
 	// Read the input and output file sizes.
-	inputFileSize, err := ReadVariableLengthInteger(bufferedReader)
+	inputFileSize, err := ReadVariableLengthInteger(reader)
 	if err != nil {
 		return nil, err
 	}
 
 	// Read the input and output file sizes.
-	outputFileSize, err := ReadVariableLengthInteger(bufferedReader)
+	outputFileSize, err := ReadVariableLengthInteger(reader)
 	if err != nil {
 		return nil, err
 	}
 
 	var patchBlocks []common.PatchBlock
 	for true {
-		b, err := bufferedReader.ReadByte()
+		b, err := reader.ReadByte()
 		if err != nil {
 			return nil, err
 		}
@@ -45,12 +57,12 @@ func ReadUPS(reader io.Reader) (*common.PatchData, error) {
 			break
 		}
 
-		relativeOffset, err := ReadVariableLengthInteger(bufferedReader)
+		relativeOffset, err := ReadVariableLengthInteger(reader)
 		if err != nil {
 			return nil, err
 		}
 
-		xor, err := bufferedReader.ReadByte()
+		xor, err := reader.ReadByte()
 		if err != nil {
 			return nil, err
 		}
@@ -62,19 +74,13 @@ func ReadUPS(reader io.Reader) (*common.PatchData, error) {
 	}
 
 	var inputChecksum int32
-	err = binary.Read(bufferedReader, binary.BigEndian, &inputChecksum)
+	err = binary.Read(reader, binary.BigEndian, &inputChecksum)
 	if err != nil {
 		return nil, err
 	}
 
 	var outputChecksum int32
-	err = binary.Read(bufferedReader, binary.BigEndian, &outputChecksum)
-	if err != nil {
-		return nil, err
-	}
-
-	var patchChecksum int32
-	err = binary.Read(bufferedReader, binary.BigEndian, &patchChecksum)
+	err = binary.Read(reader, binary.BigEndian, &outputChecksum)
 	if err != nil {
 		return nil, err
 	}

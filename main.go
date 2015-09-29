@@ -1,18 +1,18 @@
 package main
 
 import (
-	"os"
+	"io/ioutil"
 
 	"github.com/rameshvarun/ups-tools/reader"
 )
 
 func main() {
-	file, err := os.Open("test.ups")
+	data, err := ioutil.ReadFile("test.ups")
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = reader.ReadUPS(file)
+	_, err = reader.ReadUPS(data)
 	if err != nil {
 		panic(err)
 	}
