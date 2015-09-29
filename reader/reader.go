@@ -7,7 +7,7 @@ import (
 	"hash/crc32"
 	"io"
 
-	"github.com/rameshvarun/ups-tools/common"
+	"github.com/rameshvarun/ups/common"
 )
 
 // ReadUPS takes a file object and reads it into a PatchData data structure.

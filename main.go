@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 
-	"github.com/rameshvarun/ups-tools/reader"
+	"github.com/rameshvarun/ups/reader"
 )
 
 func main() {
