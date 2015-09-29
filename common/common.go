@@ -8,15 +8,15 @@ type PatchData struct {
 
 	PatchBlocks []PatchBlock
 
-	InputChecksum  int32
-	OutputChecksum int32
+	InputChecksum  uint32
+	OutputChecksum uint32
 }
 
 // PatchBlock represents a single change from the original file to the modified
 // file.
 type PatchBlock struct {
 	RelativeOffset uint64
-	XOR            byte
+	Data           []byte
 }
 
 func ValidateSignature(signature []byte) bool {

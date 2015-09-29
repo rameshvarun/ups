@@ -47,42 +47,53 @@ func ReadUPS(data []byte) (*common.PatchData, error) {
 		return nil, err
 	}
 
+	// Read in the Patch Blocks
 	var patchBlocks []common.PatchBlock
-	for true {
-		b, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		if b == 0 {
-			break
-		}
-
+	for reader.Len() > 12 {
+		// First, read in the offset from the previous block (or beginning of file)
+		// as a variable-length integer.
 		relativeOffset, err := ReadVariableLengthInteger(reader)
 		if err != nil {
 			return nil, err
 		}
 
-		xor, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
+		// Read in the NULL-terminated data portion.
+		var data []byte
+		for {
+			b, err := reader.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+			if b == 0 {
+				break
+			}
+			data = append(data, b)
 		}
 
+		// Add this to the Patch blocks splice.
 		patchBlocks = append(patchBlocks, common.PatchBlock{
 			RelativeOffset: relativeOffset,
-			XOR:            xor,
+			Data:           data,
 		})
 	}
 
-	var inputChecksum int32
-	err = binary.Read(reader, binary.BigEndian, &inputChecksum)
+	// Read the checksum of the input file.
+	var inputChecksum uint32
+	err = binary.Read(reader, binary.LittleEndian, &inputChecksum)
 	if err != nil {
 		return nil, err
 	}
 
-	var outputChecksum int32
-	err = binary.Read(reader, binary.BigEndian, &outputChecksum)
+	// Read in the checksum of the output file.
+	var outputChecksum uint32
+	err = binary.Read(reader, binary.LittleEndian, &outputChecksum)
 	if err != nil {
 		return nil, err
+	}
+
+	// What's left should just be the patch checksum.
+	if reader.Len() != 4 {
+		return nil, errors.New("File was longer than expected.")
 	}
 
 	return &common.PatchData{
