@@ -13,7 +13,7 @@ func WriteUPS(data *common.PatchData) []byte {
 	var buffer bytes.Buffer
 
 	// Write signature.
-	buffer.Write([]byte{'U', 'P', 'S', '1'})
+	buffer.Write(common.Signature)
 
 	// Write input and output file sizes.
 	buffer.Write(WriteVariableLengthInteger(data.InputFileSize))

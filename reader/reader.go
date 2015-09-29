@@ -31,7 +31,7 @@ func ReadUPS(data []byte) (*common.PatchData, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !common.ValidateSignature(signature) {
+	if !bytes.Equal(signature, common.Signature) {
 		return nil, errors.New("File did not have valid UPS signature.")
 	}
 

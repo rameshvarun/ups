@@ -1,7 +1,5 @@
 package common
 
-import "bytes"
-
 type PatchData struct {
 	InputFileSize  uint64
 	OutputFileSize uint64
@@ -19,6 +17,4 @@ type PatchBlock struct {
 	Data           []byte
 }
 
-func ValidateSignature(signature []byte) bool {
-	return bytes.Equal(signature, []byte{'U', 'P', 'S', '1'})
-}
+var Signature = []byte{'U', 'P', 'S', '1'}
