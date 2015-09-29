@@ -15,8 +15,8 @@ type PatchData struct {
 // PatchBlock represents a single change from the original file to the modified
 // file.
 type PatchBlock struct {
-	Offset int64
-	XOR    byte
+	RelativeOffset uint64
+	XOR            byte
 }
 
 func ValidateSignature(signature []byte) bool {

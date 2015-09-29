@@ -2,6 +2,7 @@ package reader
 
 import (
 	"bufio"
+	"encoding/binary"
 	"errors"
 	"io"
 
@@ -34,12 +35,56 @@ func ReadUPS(reader io.Reader) (*common.PatchData, error) {
 		return nil, err
 	}
 
+	var patchBlocks []common.PatchBlock
+	for true {
+		b, err := bufferedReader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		if b == 0 {
+			break
+		}
+
+		relativeOffset, err := ReadVariableLengthInteger(bufferedReader)
+		if err != nil {
+			return nil, err
+		}
+
+		xor, err := bufferedReader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+
+		patchBlocks = append(patchBlocks, common.PatchBlock{
+			RelativeOffset: relativeOffset,
+			XOR:            xor,
+		})
+	}
+
+	var inputChecksum int32
+	err = binary.Read(bufferedReader, binary.BigEndian, &inputChecksum)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputChecksum int32
+	err = binary.Read(bufferedReader, binary.BigEndian, &outputChecksum)
+	if err != nil {
+		return nil, err
+	}
+
+	var patchChecksum int32
+	err = binary.Read(bufferedReader, binary.BigEndian, &patchChecksum)
+	if err != nil {
+		return nil, err
+	}
+
 	return &common.PatchData{
 		InputFileSize:  inputFileSize,
 		OutputFileSize: outputFileSize,
-		PatchBlocks:    make([]common.PatchBlock, 0),
-		InputChecksum:  0,
-		OutputChecksum: 0,
+		PatchBlocks:    patchBlocks,
+		InputChecksum:  inputChecksum,
+		OutputChecksum: outputChecksum,
 	}, nil
 }
 
