@@ -1,6 +1,12 @@
 # UPS Tools [![Build Status](https://travis-ci.org/rameshvarun/ups.svg)](https://travis-ci.org/rameshvarun/ups)
 
-## Use as Library
+## Commands
+
+### `ups diff -b base -m modified -o output.ups`
+Create a UPS patch file.
+
+### `ups apply -b base -p patch.ups -o output`
+Apply a UPS patch to a file.
 
 ## Links
 - [UPS Format Specification](http://individual.utoronto.ca/dmeunier/ups-spec.pdf)
