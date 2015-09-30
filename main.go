@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -34,6 +35,22 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) {
+				if c.String("base") == "" || c.String("patch") == "" || c.String("output") == "" {
+					if c.String("base") == "" {
+						fmt.Printf("Missing required argument 'base'.\n")
+					}
+					if c.String("patch") == "" {
+						fmt.Printf("Missing required argument 'patch'.\n")
+					}
+					if c.String("output") == "" {
+						fmt.Printf("Missing required argument 'output'.\n")
+					}
+					fmt.Println()
+
+					cli.ShowCommandHelp(c, "apply")
+					os.Exit(1)
+				}
+
 				base, err := ioutil.ReadFile(c.String("base"))
 				if err != nil {
 					panic(err)
