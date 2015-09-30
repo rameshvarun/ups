@@ -8,6 +8,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/rameshvarun/ups/operations"
 	"github.com/rameshvarun/ups/reader"
+	"github.com/rameshvarun/ups/writer"
 )
 
 func main() {
@@ -75,25 +76,52 @@ func main() {
 		},
 		{
 			Name:    "diff",
-			Usage:   "Diff two files, creating a .ups patch.",
+			Usage:   "Diff two files, creating a UPS patch.",
 			Aliases: []string{"create"},
-			Action: func(c *cli.Context) {
-				panic("Not yet implemented.")
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "base, b",
+					Usage: "The base file.",
+				},
+				cli.StringFlag{
+					Name:  "modified, m",
+					Usage: "The modified file.",
+				},
+				cli.StringFlag{
+					Name:  "output, o",
+					Usage: "The file in which to write the patch data.",
+				},
 			},
-		},
-		{
-			Name:  "revert",
-			Usage: "Revert a patched file to it's original state.",
 			Action: func(c *cli.Context) {
-				panic("Not yet implemented.")
-			},
-		},
-		{
-			Name:    "merge",
-			Usage:   "Merge two .ups files, creating a file equivalent to applying both files.",
-			Aliases: []string{"combine"},
-			Action: func(c *cli.Context) {
-				panic("Not yet implemented.")
+				if c.String("base") == "" || c.String("modified") == "" || c.String("output") == "" {
+					if c.String("base") == "" {
+						fmt.Printf("Missing required argument 'base'.\n")
+					}
+					if c.String("modified") == "" {
+						fmt.Printf("Missing required argument 'patch'.\n")
+					}
+					if c.String("output") == "" {
+						fmt.Printf("Missing required argument 'output'.\n")
+					}
+					fmt.Println()
+
+					cli.ShowCommandHelp(c, "diff")
+					os.Exit(1)
+				}
+
+				base, err := ioutil.ReadFile(c.String("base"))
+				if err != nil {
+					panic(err)
+				}
+
+				modified, err := ioutil.ReadFile(c.String("modified"))
+				if err != nil {
+					panic(err)
+				}
+
+				// Create patch data and write it to file.
+				patch := operations.Diff(base, modified)
+				ioutil.WriteFile(c.String("output"), writer.WriteUPS(patch), 0644)
 			},
 		},
 	}
