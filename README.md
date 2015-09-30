@@ -1,5 +1,9 @@
 # UPS Tools [![Build Status](https://travis-ci.org/rameshvarun/ups.svg)](https://travis-ci.org/rameshvarun/ups)
 
+## Installation
+
+Builds can be downloaded from the [releases page](https://github.com/rameshvarun/ups/releases/latest). Put the executable somewhere in your PATH. If you have the Go toolchain setup, you can also run `go get github.com/rameshvarun/ups` to install from source.
+
 ## Commands
 
 ### `ups diff -b base -m modified -o output.ups`
