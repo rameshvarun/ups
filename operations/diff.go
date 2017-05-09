@@ -69,6 +69,14 @@ func Diff(base []byte, modified []byte) *common.PatchData {
 		}
 	}
 
+	// If we ended the loop on a block, then we need to end that block.
+	if currentBlock != nil {
+		blocks = append(blocks, common.PatchBlock{
+			Data:           currentBlock.Data,
+			RelativeOffset: currentBlock.Start - lastBlock,
+		})
+	}
+
 	// Return the full patch data structure.
 	return &common.PatchData{
 		InputFileSize:  uint64(len(base)),
