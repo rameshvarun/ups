@@ -16,26 +16,26 @@ func main() {
 	app.Name = "ups"
 	app.Usage = "Utilities for manipulating / creating UPS patch files."
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "apply",
 			Usage:   "Apply a .ups patch to a file.",
 			Aliases: []string{"patch"},
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "base, b",
 					Usage: "The base file on top of which to apply the patch.",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "patch, p",
 					Usage: "The patch file to apply.",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "output, o",
 					Usage: "The file in which to write the patched data.",
 				},
 			},
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				if c.String("base") == "" || c.String("patch") == "" || c.String("output") == "" {
 					if c.String("base") == "" {
 						fmt.Printf("Missing required argument 'base'.\n")
@@ -48,8 +48,11 @@ func main() {
 					}
 					fmt.Println()
 
-					cli.ShowCommandHelp(c, "apply")
-					os.Exit(1)
+					err := cli.ShowCommandHelp(c, "apply")
+					if err != nil {
+						panic(err)
+					}
+					return cli.Exit("", 1)
 				}
 
 				base, err := ioutil.ReadFile(c.String("base"))
@@ -71,7 +74,12 @@ func main() {
 					panic(err)
 				}
 
-				ioutil.WriteFile(c.String("output"), result, 0644)
+				err = ioutil.WriteFile(c.String("output"), result, 0644)
+				if err != nil {
+					panic(err)
+				}
+
+				return nil
 			},
 		},
 		{
@@ -79,20 +87,20 @@ func main() {
 			Usage:   "Diff two files, creating a UPS patch.",
 			Aliases: []string{"create"},
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "base, b",
 					Usage: "The base file.",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "modified, m",
 					Usage: "The modified file.",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "output, o",
 					Usage: "The file in which to write the patch data.",
 				},
 			},
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				if c.String("base") == "" || c.String("modified") == "" || c.String("output") == "" {
 					if c.String("base") == "" {
 						fmt.Printf("Missing required argument 'base'.\n")
@@ -105,8 +113,11 @@ func main() {
 					}
 					fmt.Println()
 
-					cli.ShowCommandHelp(c, "diff")
-					os.Exit(1)
+					err := cli.ShowCommandHelp(c, "diff")
+					if err != nil {
+						panic(err)
+					}
+					return cli.Exit("", 1)
 				}
 
 				base, err := ioutil.ReadFile(c.String("base"))
@@ -121,10 +132,18 @@ func main() {
 
 				// Create patch data and write it to file.
 				patch := operations.Diff(base, modified)
-				ioutil.WriteFile(c.String("output"), writer.WriteUPS(patch), 0644)
+				err = ioutil.WriteFile(c.String("output"), writer.WriteUPS(patch), 0644)
+				if err != nil {
+					panic(err)
+				}
+
+				return nil
 			},
 		},
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		panic(err)
+	}
 }
