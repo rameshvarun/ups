@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli/v2"
 	"github.com/rameshvarun/ups/operations"
 	"github.com/rameshvarun/ups/reader"
 	"github.com/rameshvarun/ups/writer"
