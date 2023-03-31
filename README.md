@@ -1,4 +1,5 @@
-# UPS Tools [![Build Status](https://travis-ci.org/rameshvarun/ups.svg)](https://travis-ci.org/rameshvarun/ups)
+# UPS Tools
+[![Go](https://github.com/rameshvarun/ups/actions/workflows/go.yml/badge.svg)](https://github.com/rameshvarun/ups/actions/workflows/go.yml)
 
 ## Installation
 
